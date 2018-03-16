@@ -17,7 +17,6 @@ public class Main {
 		}
 		URL url = new URL(args[1]);
 		int port = Integer.parseInt(args[2]);
-
 	    Socket clientSocket = new Socket(url.getHost(), port);
 	    
 	    ChatClient chatClient = new ChatClient(command, url, port, clientSocket);

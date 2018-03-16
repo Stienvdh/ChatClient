@@ -72,12 +72,12 @@ public class ChatClient {
 	    System.out.print(header);
 	    System.out.print(new String(body) + "\n");
 	    
+	    String respons = this.FetchImages(new String(body));
+	    
 	    File file = new File("response.html");
 		BufferedWriter fileWrite = new BufferedWriter(new FileWriter(file));
-	    fileWrite.write(new String(body)); 
+	    fileWrite.write(respons); 
 	    fileWrite.close();
-	    
-	    this.FetchImages(new String(body));
 	}
 	
 	public String getHeader(InputStream inFromServer) throws IOException {
@@ -107,21 +107,24 @@ public class ChatClient {
 		return body;
 	}
 	
-	public void FetchImages(String body) throws IOException {
+	public String FetchImages(String body) throws IOException {
 		Document doc = Jsoup.parse(body);
 	    Elements images = doc.select("img[src]");
 	    System.out.println("Number of images found: " + images.size() + "\n");
 	    
-	    
+//	    String dirName = "D:\\Downloads\\results";
+	    File dir = new File(dirName);
+	    System.out.println(dir.mkdir());
 	    
 	    if (images.size() > 0) {
 	    	
 	    	for (int i=0; i < images.size(); i++) {
-	    		System.out.println(images.get(i));
-	    		System.out.print("Fetching image " + (i+1) + " of " + images.size() + "... ");
 	    		String source = images.get(i).attr("src");
+	    		System.out.println(source);
+	    		System.out.print("Fetching image " + (i+1) + " of " + images.size() + "... ");
 	    		String extension = FilenameUtils.getExtension(source);
-	    		File imageFile = new File("image_" + (i+1) + "." + extension);
+	    		body = body.replace(source, dirName + "\\image_" + (i+1) + "." + extension);
+	    		File imageFile = new File(dirName, "image_" + (i+1) + "." + extension);
 	    		FileOutputStream imageFileWrite = new FileOutputStream(imageFile);
 	    		
 	    		String sentence = "GET" + " /" + source + " " + "HTTP/1.1" + "\r\n";
@@ -140,6 +143,7 @@ public class ChatClient {
 	    	}
 	    	System.out.println("\nFetched all images \n");
 	    }
+	    return body;
 	}
 
 	public String command;
