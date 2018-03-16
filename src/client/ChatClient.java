@@ -112,7 +112,7 @@ public class ChatClient {
 	    Elements images = doc.select("img[src]");
 	    System.out.println("Number of images found: " + images.size() + "\n");
 	    
-//	    String dirName = "D:\\Downloads\\results";
+	    String dirName = "/Users/Stien/Documents/School/3de bach/Computer Networks/Images";
 	    File dir = new File(dirName);
 	    System.out.println(dir.mkdir());
 	    
