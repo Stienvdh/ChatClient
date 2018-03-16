@@ -112,7 +112,10 @@ public class ChatClient {
 	    Elements images = doc.select("img[src]");
 	    System.out.println("Number of images found: " + images.size() + "\n");
 	    
+	    
+	    
 	    if (images.size() > 0) {
+	    	
 	    	for (int i=0; i < images.size(); i++) {
 	    		System.out.println(images.get(i));
 	    		System.out.print("Fetching image " + (i+1) + " of " + images.size() + "... ");
