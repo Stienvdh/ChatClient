@@ -1,6 +1,7 @@
 package client;
 
 import java.io.*;
+import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URL;
 
@@ -114,22 +115,38 @@ public class ChatClient {
 	    
 	    String dirName = "/Users/Stien/Documents/School/3de bach/Computer Networks/Images";
 	    File dir = new File(dirName);
-	    System.out.println(dir.mkdir());
+	    dir.mkdir();
 	    
 	    if (images.size() > 0) {
 	    	
 	    	for (int i=0; i < images.size(); i++) {
 	    		String source = images.get(i).attr("src");
-	    		System.out.println(source);
 	    		System.out.print("Fetching image " + (i+1) + " of " + images.size() + "... ");
 	    		String extension = FilenameUtils.getExtension(source);
 	    		body = body.replace(source, dirName + "\\image_" + (i+1) + "." + extension);
 	    		File imageFile = new File(dirName, "image_" + (i+1) + "." + extension);
 	    		FileOutputStream imageFileWrite = new FileOutputStream(imageFile);
 	    		
-	    		String sentence = "GET" + " /" + source + " " + "HTTP/1.1" + "\r\n";
-	    		sentence += "host: " + url.getHost() + ":" + this.port;
-	    		inFromServer = new BufferedInputStream(this.socket.getInputStream());
+	    		String sentence = "";
+	    		String host = url.getHost();
+	    		Socket imageSocket = this.socket;
+	    		boolean newSocket = true;
+	    		
+	    		try {
+	    			URL sourceURL = new URL(source);
+	    			System.out.println(sourceURL);
+	    			host = sourceURL.getHost();
+	    			imageSocket = new Socket(host, 80);
+	    			sentence = "GET " + source + " " + "HTTP/1.1" + "\r\n";
+	    		}
+	    		catch (MalformedURLException exc){
+	    			newSocket = false;
+	    			sentence = "GET " + "/" + source + " " + "HTTP/1.1" + "\r\n";
+	    		}
+
+	    		sentence += "host: " + host + ":" + imageSocket.getPort();
+	    		inFromServer = new BufferedInputStream(imageSocket.getInputStream());
+	    		outToServer = new DataOutputStream(imageSocket.getOutputStream());
 	    	    outToServer.writeBytes(sentence);
 	    	    outToServer.writeBytes("\r\n");
 	    	    outToServer.writeBytes("\r\n");
@@ -138,6 +155,10 @@ public class ChatClient {
 	    	    byte[] image = this.getBody(header, inFromServer);
 	    	    imageFileWrite.write(image);
 	    	    imageFileWrite.close();
+	    	    
+	    	    if (newSocket) {
+	    	    	imageSocket.close();
+	    	    }
 	    	    
 	    	    System.out.println("Done");
 	    	}

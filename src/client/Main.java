@@ -22,7 +22,7 @@ public class Main {
 	    ChatClient chatClient = new ChatClient(command, url, port, clientSocket);
 	    chatClient.executeCommand();
 	    
-	    System.out.println("Closing connection...");
+	    System.out.println("Closing connection... \n");
 	    clientSocket.close();
 	}
 	
