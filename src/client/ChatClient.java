@@ -41,14 +41,51 @@ public class ChatClient {
 		
 	}
 
-	public void executePUT() {
-		// TODO Auto-generated method stub
+	public void executePUT() throws IOException {
+		String path;
+	    if (this.url.getPath() == "") {
+	    	path = "/";
+	    }
+	    else {
+	    	path = url.getFile();
+	    }
+		String sentence = command + " " + path + " " + "HTTP/1.1" + "\r\n";
+	    sentence += "Host: " + url.getHost() + ":" + port + "\r\n";
 		
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		System.out.print("Tell us a joke: ");
+		String stringToSend = br.readLine();
+		sentence += "Content-Length: " + stringToSend.length() + "\r\n";
+		
+		System.out.println("TO SERVER: " + "\n");
+	    System.out.println(sentence);
+	    this.outToServer.writeBytes(sentence + "\r\n");
+	    this.outToServer.writeBytes(stringToSend);
+	    
+	    String response = this.getHeader(this.inFromServer);
+	    System.out.println("FROM SERVER: \n");
+	    System.out.print(response);
 	}
 
-	public void executeHEAD() {
-		// TODO Auto-generated method stub
-		
+	public void executeHEAD() throws IOException {
+		String path;
+	    if (this.url.getPath() == "") {
+	    	path = "/";
+	    }
+	    else {
+	    	path = url.getFile();
+	    }
+	    
+	    String sentence = command + " " + path + " " + "HTTP/1.1" + "\r\n";
+	    sentence += "Host: " + url.getHost() + ":" + port;
+	    System.out.println("TO SERVER: " + "\n");
+	    System.out.println(sentence + "\n");
+	    this.outToServer.writeBytes(sentence);
+	    this.outToServer.writeBytes("\r\n\r\n");
+	    
+	    String header = this.getHeader(this.inFromServer);
+	    System.out.println("FROM SERVER: \n");
+	    System.out.print(header);
 	}
 
 	public void executeGET() throws IOException {
@@ -61,16 +98,16 @@ public class ChatClient {
 	    }
 	    
 	    String sentence = command + " " + path + " " + "HTTP/1.1" + "\r\n";
-	    sentence += "host: " + url.getHost() + ":" + port;
+	    sentence += "Host: " + url.getHost() + ":" + port;
 	    System.out.println("TO SERVER: " + "\n");
 	    System.out.println(sentence + "\n");
 	    this.outToServer.writeBytes(sentence);
 	    this.outToServer.writeBytes("\r\n\r\n");
 	    
 	    String header = this.getHeader(this.inFromServer);
-	    byte[] body = this.getBody(header, inFromServer);
 	    System.out.println("FROM SERVER: \n");
 	    System.out.print(header);
+	    byte[] body = this.getBody(header, inFromServer);
 	    System.out.print(new String(body) + "\n");
 	    
 	    String respons = this.FetchImages(new String(body));
@@ -94,10 +131,11 @@ public class ChatClient {
 		int startLengthHeader = header.indexOf("Content-Length");
 		int endLengthHeader = header.indexOf("\r", startLengthHeader);
 		String line = header.substring(startLengthHeader, endLengthHeader);
-		line.trim();
+		line = line.trim();
 		int startLength = line.indexOf(":") + 2;
 		String lengthString = line.substring(startLength);
 		int length = Integer.parseInt(lengthString);
+		System.out.println("length body: " + length);
 		byte[] body = new byte[length];
 		
 		int offset = 0;
@@ -144,7 +182,7 @@ public class ChatClient {
 	    			sentence = "GET " + "/" + source + " " + "HTTP/1.1" + "\r\n";
 	    		}
 
-	    		sentence += "host: " + host + ":" + imageSocket.getPort();
+	    		sentence += "Host: " + host + ":" + imageSocket.getPort();
 	    		inFromServer = new BufferedInputStream(imageSocket.getInputStream());
 	    		outToServer = new DataOutputStream(imageSocket.getOutputStream());
 	    	    outToServer.writeBytes(sentence);
