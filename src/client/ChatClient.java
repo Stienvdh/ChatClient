@@ -414,11 +414,11 @@ public class ChatClient {
 		return this.command;
 	}
 
-	public String command;
-	public URL url;
-	public int port;
-	public InputStream inFromServer;
-	public DataOutputStream outToServer;
-	public Socket socket;
+	private String command;
+	private URL url;
+	private int port;
+	private InputStream inFromServer;
+	private DataOutputStream outToServer;
+	private Socket socket;
 	
 }
