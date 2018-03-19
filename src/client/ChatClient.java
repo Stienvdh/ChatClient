@@ -53,11 +53,11 @@ public class ChatClient {
 	    sentence += "Host: " + url.getHost() + ":" + port + "\r\n";
 		
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-		System.out.print("Tell us a joke: ");
+		System.out.print("\nTell us a joke: ");
 		String stringToSend = br.readLine();
 		sentence += "Content-Length: " + stringToSend.length() + "\r\n";
 		
-		System.out.println("TO SERVER: " + "\n");
+		System.out.println("\nTO SERVER: " + "\n");
 	    System.out.println(sentence);
 	    this.outToServer.writeBytes(sentence + "\r\n");
 	    this.outToServer.writeBytes(stringToSend);
