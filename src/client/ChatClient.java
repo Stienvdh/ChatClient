@@ -67,8 +67,7 @@ public class ChatClient {
 	}
 
 	public void executePOST() {
-		// TODO Auto-generated method stub
-		
+		executePUT();
 	}
 	
 	/**
@@ -85,10 +84,10 @@ public class ChatClient {
 	    	path = "/";
 	    }
 	    else {
-	    	path = url.getFile();
+	    	path = getURL().getFile();
 	    }
 		String sentence = command + " " + path + " " + "HTTP/1.1" + "\r\n";
-	    sentence += "Host: " + url.getHost() + ":" + port + "\r\n";
+	    sentence += "Host: " + getURL().getHost() + ":" + port + "\r\n";
 		
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		System.out.print("\nTell us a joke: ");
@@ -175,6 +174,7 @@ public class ChatClient {
 	    String header = this.getHeader(getInFromServer());
 	    System.out.println("FROM SERVER: \n");
 	    System.out.print(header);
+	    
 	    byte[] body = this.getBody(header, getInFromServer());
 	    System.out.print(new String(body) + "\n");
 	    
@@ -219,8 +219,14 @@ public class ChatClient {
 	 * 			reads that amount of bytes into the byte array it then returns. 
 	 * 
 	 * @return	The method returns a byte array, containing the body the server sent in response to the request of this ChatClient.
+	 * @return	If the response of the server does not have status code 200, an empty byte array is returned. 
 	 */
 	public byte[] getBody(String header, InputStream inFromServer) throws IOException {
+		int statusCode = Integer.parseInt(header.substring(9, 12));
+		if (statusCode != 200) {
+			return new byte [0];
+		}
+		
 		int startLengthHeader = header.indexOf("Content-Length");
 		int endLengthHeader = header.indexOf("\r", startLengthHeader);
 		String line = header.substring(startLengthHeader, endLengthHeader);
@@ -228,7 +234,6 @@ public class ChatClient {
 		int startLength = line.indexOf(":") + 2;
 		String lengthString = line.substring(startLength);
 		int length = Integer.parseInt(lengthString);
-		System.out.println("length body: " + length);
 		byte[] body = new byte[length];
 		
 		int offset = 0;
