@@ -2,9 +2,23 @@ package client;
 
 import java.net.*;
 
+/**
+ * The main class of ChatClient. It instantiates a new ChatClient with the given arguments.
+ */
 public class Main {
 	
-	public static void main(String[] args) throws Exception {
+	/**
+	 * A main method to start a new ChatClient.
+	 * 
+	 * @param args	The arguments to intantiate the enw ChatClient with.
+	 * 
+	 * @effect 	A wrong usage of the main method, i.e. not the right amount of arguments, is reported if necessary.
+	 * @effect 	A new ChatClient is instantiated with the given arguments and execution of the given command is started.
+	 * @effect	When the ChatClient is done doing all its necessary requests, its socket is closed. 
+	 * 
+	 * @throws Exception
+	 */
+	public static void main(String[] args) throws Exception{
 
 		if (args.length != 3) {
 			System.err.println("Wrong usage! Right usage: ChatClient <HTTP command> <URI> <port>");
