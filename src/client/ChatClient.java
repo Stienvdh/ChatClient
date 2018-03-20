@@ -385,15 +385,6 @@ public class ChatClient {
 	}
 	
 	/**
-	 * @param inFromServer the inFromServer to set
-	 * 
-	 * @post	| new.getInFromServer() == inFromServer
-	 */
-	private void setInFromServer(InputStream inFromServer) {
-		this.inFromServer = inFromServer;
-	}
-
-	/**
 	 * Returns the URL of this ChatClient.
 	 */
 	private URL getURL() {
@@ -438,7 +429,7 @@ public class ChatClient {
 	private String command;
 	private URL url;
 	private int port;
-	private InputStream inFromServer;
+	private BufferedInputStream inFromServer;
 	private DataOutputStream outToServer;
 	private Socket socket;
 	
