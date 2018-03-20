@@ -86,8 +86,8 @@ public class ChatClient {
 	    else {
 	    	path = getURL().getFile();
 	    }
-		String sentence = command + " " + path + " " + "HTTP/1.1" + "\r\n";
-	    sentence += "Host: " + getURL().getHost() + ":" + port + "\r\n";
+		String sentence = getCommand() + " " + path + " " + "HTTP/1.1" + "\r\n";
+	    sentence += "Host: " + getURL().getHost() + ":" + getPort() + "\r\n";
 		
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		System.out.print("\nTell us a joke: ");
@@ -129,8 +129,8 @@ public class ChatClient {
 	    	path = getURL().getFile();
 	    }
 	    
-	    String sentence = command + " " + path + " " + "HTTP/1.1" + "\r\n";
-	    sentence += "Host: " + getURL().getHost() + ":" + port;
+	    String sentence = getCommand() + " " + path + " " + "HTTP/1.1" + "\r\n";
+	    sentence += "Host: " + getURL().getHost() + ":" + getPort();
 	    System.out.println("TO SERVER: " + "\n");
 	    System.out.println(sentence + "\n");
 	    try {
@@ -164,8 +164,8 @@ public class ChatClient {
 	    	path = getURL().getFile();
 	    }
 	    
-	    String sentence = command + " " + path + " " + "HTTP/1.1" + "\r\n";
-	    sentence += "Host: " + getURL().getHost() + ":" + port;
+	    String sentence = getCommand() + " " + path + " " + "HTTP/1.1" + "\r\n";
+	    sentence += "Host: " + getURL().getHost() + ":" + getPort();
 	    System.out.println("TO SERVER: " + "\n");
 	    System.out.println(sentence + "\n");
 	    getOutToServer().writeBytes(sentence);
@@ -264,7 +264,7 @@ public class ChatClient {
 	    Elements images = doc.select("img[src]");
 	    System.out.println("Number of images found: " + images.size() + "\n");
 	    
-	    String dirName = "/Users/Stien/Documents/School/3de bach/Computer Networks/Images";
+	    String dirName = "D:\\Downloads\\results";
 	    File dir = new File(dirName);
 	    dir.mkdir();
 	    
@@ -385,6 +385,15 @@ public class ChatClient {
 	}
 	
 	/**
+	 * @param inFromServer the inFromServer to set
+	 * 
+	 * @post	| new.getInFromServer() == inFromServer
+	 */
+	private void setInFromServer(InputStream inFromServer) {
+		this.inFromServer = inFromServer;
+	}
+
+	/**
 	 * Returns the URL of this ChatClient.
 	 */
 	private URL getURL() {
@@ -417,6 +426,13 @@ public class ChatClient {
 	 */
 	private String getCommand() {
 		return this.command;
+	}
+
+	/**
+	 * Returns the port.
+	 */
+	private int getPort() {
+		return port;
 	}
 
 	private String command;
