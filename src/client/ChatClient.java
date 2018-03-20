@@ -275,7 +275,7 @@ public class ChatClient {
 	    Elements images = doc.select("img[src]");
 	    System.out.println("Number of images found: " + images.size() + "\n");
 	    
-	    String dirName = "D:\\Downloads\\results";
+	    String dirName = "Images";
 	    File dir = new File(dirName);
 	    dir.mkdir();
 	    
@@ -285,7 +285,7 @@ public class ChatClient {
 	    		String source = images.get(i).attr("src");
 	    		System.out.print("Fetching image " + (i+1) + " of " + images.size() + "... ");
 	    		String extension = FilenameUtils.getExtension(source);
-	    		body = body.replace(source, dirName + "\\image_" + (i+1) + "." + extension);
+	    		body = body.replace(source, dirName + "/image_" + (i+1) + "." + extension);
 	    		File imageFile = new File(dirName, "image_" + (i+1) + "." + extension);
 	    		FileOutputStream imageFileWrite = new FileOutputStream(imageFile);
 	    		
