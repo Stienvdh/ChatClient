@@ -10,7 +10,7 @@ public class Main {
 	/**
 	 * A main method to start a new ChatClient.
 	 * 
-	 * @param args	The arguments to intantiate the enw ChatClient with.
+	 * @param args	The arguments to intantiate the new ChatClient with.
 	 * 
 	 * @effect 	A wrong usage of the main method, i.e. not the right amount of arguments, is reported if necessary.
 	 * @effect 	A new ChatClient is instantiated with the given arguments and execution of the given command is started.
@@ -20,8 +20,8 @@ public class Main {
 	 */
 	public static void main(String[] args) throws Exception{
 
-		if (args.length != 3) {
-			System.err.println("Wrong usage! Right usage: ChatClient <HTTP command> <URI> <port>");
+		if (args.length < 2 || args.length > 3) {
+			System.err.println("Wrong usage! Right usage: ChatClient <HTTP command> <URI> [<port>]");
 	        System.exit(1);
 		}
 
@@ -30,7 +30,11 @@ public class Main {
 			args[1] = "http://" + args[1];
 		}
 		URL url = new URL(args[1]);
-		int port = Integer.parseInt(args[2]);
+		
+		int port = 80;
+		if (args.length == 3) {
+			port = Integer.parseInt(args[2]);
+		}
 	    Socket clientSocket = new Socket(url.getHost(), port);
 	    
 	    ChatClient chatClient = new ChatClient(command, url, port, clientSocket);

@@ -4,6 +4,7 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 
 import org.apache.commons.io.FilenameUtils;
 import org.jsoup.Jsoup;
@@ -49,7 +50,7 @@ public class ChatClient {
 	 * Reroute execution to the method, that implements the requested command. 
 	 * 
 	 * @effect	This method calls the appropriate method, in correspondance with the command it is initiated with
-	 * 			@see implementation
+	 * 			| @see implementation
 	 */
 	public void executeCommand() throws IOException {
 		if (getCommand().equals("GET")) {
@@ -65,74 +66,53 @@ public class ChatClient {
 			executePOST();
 		}
 	}
-
-	public void executePOST() {
-		executePUT();
-	}
 	
 	/**
-	 * Execute a PUT request.
+	 * Execute a GET request. 
 	 * 
-	 * @effect	The method prompts the user for the sentence to send to the host. 
-	 * @effect	The method creates a request to send to the host. This request contains the PUT command with URL and HTTP version 1.1,
-	 * 			the appropriate host header, the appropriate Content-Length header and the body the user wants to send. 
-	 * @effect	The method sends this header and body to the host. 
+	 * @effect	The method creates a request to send to the host. This request contains the GET command with URL and 
+	 * 			HTTP version 1.1 and the appropriate host header.
+	 * 			| createRequest()
+	 * @effect 	The method sends this header to the host.
+	 * @effect	If the host responds with a HTML file, the method starts fetching the images in the file.
+	 * 			| fetchImages();
+	 * @effect	The method reads and prints the response of the host. 
+	 * @effect	The method stores the body of the response of the server locally. References to embedded
+	 * 			images are replaced by references to their local path.
 	 */
-	public void executePUT() {
-		String path;
-	    if (getURL().getPath() == "") {
-	    	path = "/";
-	    }
-	    else {
-	    	path = getURL().getFile();
-	    }
-		String sentence = command + " " + path + " " + "HTTP/1.1" + "\r\n";
-	    sentence += "Host: " + getURL().getHost() + ":" + port + "\r\n";
+	public void executeGET() throws IOException {
+		String sentence = createRequest();
+		System.out.println("\r\n");
 		
-		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-		System.out.print("\nTell us a joke: ");
-		String stringToSend = "";
-		try {
-			stringToSend = br.readLine();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		sentence += "Content-Length: " + stringToSend.length() + "\r\n";
-		
-		System.out.println("\nTO SERVER: " + "\n");
-	    System.out.println(sentence);
-	    try {
-			getOutToServer().writeBytes(sentence + "\r\n");
-			getOutToServer().writeBytes(stringToSend);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	    getOutToServer().writeBytes(sentence);
+	    getOutToServer().writeBytes("\r\n\r\n");
 	    
-	    String response = this.getHeader(getInFromServer());
-	    System.out.println("FROM SERVER: \n");
-	    System.out.print(response);
+	    String header = this.getHeader(getInFromServer());
+	    System.out.println("FROM SERVER: \r\n");
+	    System.out.print(header);
+	    
+	    byte[] body = this.getBody(header, getInFromServer());
+	    System.out.print(new String(body) + "\r\n\r\n");
+	    
+	    String response = this.FetchImages(new String(body));
+	    
+	    File file = new File("response.html");
+		BufferedWriter fileWrite = new BufferedWriter(new FileWriter(file));
+	    fileWrite.write(response); 
+	    fileWrite.close();
 	}
-	
+
 	/**
 	 * Execute a HEAD request. 
 	 * 
 	 * @effect	The method creates a request to send to the host. This request contains the HEAD command with URL and 
 	 * 			HTTP version 1.1 and the appropriate host header.
 	 * @effect 	The method sends this header to the host. 
+	 * @effect	The response of the host is read and printed. 
 	 */
 	public void executeHEAD() {
-		String path;
-	    if (getURL().getPath() == "") {
-	    	path = "/";
-	    }
-	    else {
-	    	path = getURL().getFile();
-	    }
-	    
-	    String sentence = command + " " + path + " " + "HTTP/1.1" + "\r\n";
-	    sentence += "Host: " + getURL().getHost() + ":" + port;
-	    System.out.println("TO SERVER: " + "\n");
-	    System.out.println(sentence + "\n");
+	    String sentence = createRequest();
+	    System.out.println("\r\n");
 	    try {
 	    	getOutToServer().writeBytes(sentence);
 		    getOutToServer().writeBytes("\r\n\r\n");
@@ -147,15 +127,58 @@ public class ChatClient {
 	}
 	
 	/**
-	 * Execute a GET request. 
+	 * Execute a PUT request.
 	 * 
-	 * @effect	The method creates a request to send to the host. This request contains the GET command with URL and 
-	 * 			HTTP version 1.1 and the appropriate host header.
-	 * @effect 	The method sends this header to the host.
-	 * @effect	If the host responds with a HTML file, the method starts fetching the images in the file.
-	 * 			| fetchImages();
+	 * @effect	The method prompts the user for the sentence to send to the host. 
+	 * @effect	The method creates a request to send to the host. This request contains the PUT command with URL and HTTP version 1.1,
+	 * 			the appropriate host header, the appropriate Content-Length header and the body the user wants to send. 
+	 * @effect	The method sends this header and body to the host. 
+	 * @effect	The method reads prints the response of the host.
 	 */
-	public void executeGET() throws IOException {
+	public void executePUT() {
+		String sentence = createRequest();
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		System.out.print("\nTell us a joke: ");
+		String stringToSend = "";
+		try {
+			stringToSend = br.readLine();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		sentence += "\r\nContent-Length: " + stringToSend.length() + "\r\n";
+		System.out.println("\nTO SERVER: " + "\n");
+	    System.out.println(sentence + "\r\n" + stringToSend + "\r\n");
+	    
+	    try {
+			getOutToServer().writeBytes(sentence + "\r\n");
+			getOutToServer().writeBytes(stringToSend);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	    
+	    String response = this.getHeader(getInFromServer());
+	    System.out.println("FROM SERVER: \n");
+	    System.out.print(response);
+	}
+	
+	/**
+	 * Execute a POST request.
+	 * 
+	 * @effect	| executePUT()
+	 */
+	public void executePOST() {
+		executePUT();
+	}
+	
+	/**
+	 * Creates a request to send to a host, with rerspect to the HTTP/1.1 protocol.
+	 * 
+	 * @effect	The method prints the created header.
+	 * 
+	 * @return	The returned String denotes the command, filepath and HTTP (1.1) version of this ChatClient.
+	 * @return	The returned String contains the obligatory 'Host' header.
+	 */
+	public String createRequest() {
 		String path;
 	    if (getURL().getPath() == "") {
 	    	path = "/";
@@ -164,28 +187,18 @@ public class ChatClient {
 	    	path = getURL().getFile();
 	    }
 	    
-	    String sentence = command + " " + path + " " + "HTTP/1.1" + "\r\n";
-	    sentence += "Host: " + getURL().getHost() + ":" + port;
-	    System.out.println("TO SERVER: " + "\n");
-	    System.out.println(sentence + "\n");
-	    getOutToServer().writeBytes(sentence);
-	    getOutToServer().writeBytes("\r\n\r\n");
+	    //SimpleDateFormat dateTimeFormat = new SimpleDateFormat("E, dd MMM yyyy HH:mm:ss");
+		String sentence = command + " " + path + " " + "HTTP/1.1" + "\r\n";
+	    sentence += "Host: " + getURL().getHost() + ":" + getPort();
+	    //sentence += "If-Modified-Since: " + dateTimeFormat.format(1387429L) + "GMT";
+	    if (!(getCommand().equals("PUT")) && !(getCommand().equals("POST"))) {
+		    System.out.println("\nTO SERVER: " + "\n");
+		    System.out.println(sentence);
+	    }
 	    
-	    String header = this.getHeader(getInFromServer());
-	    System.out.println("FROM SERVER: \n");
-	    System.out.print(header);
-	    
-	    byte[] body = this.getBody(header, getInFromServer());
-	    System.out.print(new String(body) + "\n");
-	    
-	    String respons = this.FetchImages(new String(body));
-	    
-	    File file = new File("response.html");
-		BufferedWriter fileWrite = new BufferedWriter(new FileWriter(file));
-	    fileWrite.write(respons); 
-	    fileWrite.close();
+	    return sentence;
 	}
-	
+
 	/**
 	 * Returns the header, sent to the ChatClient by the server. 
 	 * 
@@ -215,18 +228,13 @@ public class ChatClient {
 	 * @param header		The header, sent by the server, corresponding to the body to return. 
 	 * @param inFromServer	The inputstream, the body has to be read off.
 	 * 
-	 * @effect	The method deducts from the 'Content-Length' header how many bytes it has to erad from the inputstream and then
+	 * @effect	The method deducts from the 'Content-Length' header how many bytes it has to read from the inputstream and then
 	 * 			reads that amount of bytes into the byte array it then returns. 
 	 * 
 	 * @return	The method returns a byte array, containing the body the server sent in response to the request of this ChatClient.
-	 * @return	If the response of the server does not have status code 200, an empty byte array is returned. 
+	 * @return	If the 'Content-Length' header indicates an empty body, an empty byte array is returned.
 	 */
 	public byte[] getBody(String header, InputStream inFromServer) throws IOException {
-		int statusCode = Integer.parseInt(header.substring(9, 12));
-		if (statusCode != 200) {
-			return new byte [0];
-		}
-		
 		int startLengthHeader = header.indexOf("Content-Length");
 		int endLengthHeader = header.indexOf("\r", startLengthHeader);
 		String line = header.substring(startLengthHeader, endLengthHeader);
@@ -234,6 +242,9 @@ public class ChatClient {
 		int startLength = line.indexOf(":") + 2;
 		String lengthString = line.substring(startLength);
 		int length = Integer.parseInt(lengthString);
+		if (length == 0) {
+			return new byte[0];
+		}
 		byte[] body = new byte[length];
 		
 		int offset = 0;
@@ -285,7 +296,6 @@ public class ChatClient {
 	    		
 	    		try {
 	    			URL sourceURL = new URL(source);
-	    			System.out.println(sourceURL);
 	    			host = sourceURL.getHost();
 	    			imageSocket = new Socket(host, 80);
 	    			sentence = "GET " + source + " " + "HTTP/1.1" + "\r\n";
@@ -318,6 +328,17 @@ public class ChatClient {
 	    return body;
 	}
 	
+	/**
+	 * Set the URL of this ChatClient to the given URL.
+	 * 
+	 * @param url	The new URL
+	 * 
+	 * @post	| new.getURL() == url
+	 */
+	private void setURL(URL url) {
+		this.url = url;
+	}
+
 	/**
 	 * Set the inputstream of this ChatClient to the given inputstream.
 	 * 
@@ -352,28 +373,6 @@ public class ChatClient {
 	}
 
 	/**
-	 * Set the port of this ChatClient to the given port.
-	 * 
-	 * @param port	The new port
-	 * 
-	 * @post	| new.getPort() == port
-	 */
-	private void setPort(int port) {
-		this.port = port;
-	}
-
-	/**
-	 * Set the URL of this ChatClient to the given URL.
-	 * 
-	 * @param url	The new URL
-	 * 
-	 * @post	| new.getURL() == url
-	 */
-	private void setURL(URL url) {
-		this.url = url;
-	}
-
-	/**
 	 * Set the command of this ChatClient to the given command.
 	 * 
 	 * @param command	The new command
@@ -384,6 +383,17 @@ public class ChatClient {
 		this.command = command;
 	}
 	
+	/**
+	 * Set the port of this ChatClient to the given port.
+	 * 
+	 * @param port	The new port
+	 * 
+	 * @post	| new.getPort() == port
+	 */
+	private void setPort(int port) {
+		this.port = port;
+	}
+
 	/**
 	 * Returns the URL of this ChatClient.
 	 */
@@ -418,12 +428,19 @@ public class ChatClient {
 	private String getCommand() {
 		return this.command;
 	}
+	
+	/**
+	 * Returns the port of this ChatClient.
+	 */
+	private int getPort() {
+		return this.port;
+	}
 
-	private String command;
 	private URL url;
-	private int port;
 	private InputStream inFromServer;
 	private DataOutputStream outToServer;
 	private Socket socket;
+	private String command;
+	private int port;
 	
 }
