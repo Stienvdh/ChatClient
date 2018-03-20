@@ -188,7 +188,7 @@ public class ChatClient {
 	    }
 	    
 	    //SimpleDateFormat dateTimeFormat = new SimpleDateFormat("E, dd MMM yyyy HH:mm:ss");
-		String sentence = command + " " + path + " " + "HTTP/1.1" + "\r\n";
+		String sentence = getCommand() + " " + path + " " + "HTTP/1.1" + "\r\n";
 	    sentence += "Host: " + getURL().getHost() + ":" + getPort();
 	    //sentence += "If-Modified-Since: " + dateTimeFormat.format(1387429L) + "GMT";
 	    if (!(getCommand().equals("PUT")) && !(getCommand().equals("POST"))) {
@@ -275,7 +275,7 @@ public class ChatClient {
 	    Elements images = doc.select("img[src]");
 	    System.out.println("Number of images found: " + images.size() + "\n");
 	    
-	    String dirName = "/Users/Stien/Documents/School/3de bach/Computer Networks/Images";
+	    String dirName = "D:\\Downloads\\results";
 	    File dir = new File(dirName);
 	    dir.mkdir();
 	    
@@ -437,7 +437,7 @@ public class ChatClient {
 	}
 
 	private URL url;
-	private InputStream inFromServer;
+	private BufferedInputStream inFromServer;
 	private DataOutputStream outToServer;
 	private Socket socket;
 	private String command;
